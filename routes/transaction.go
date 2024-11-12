@@ -213,29 +213,10 @@ func (h *TransactionHandler) GetTransactions(c *fiber.Ctx) error {
 		})
 	}
 
-	// Update the transactions slice to only include the required fields
-	var filteredTransactions []struct {
-		Type      string    `json:"type"`
-		Amount    float64   `json:"amount"`
-		Timestamp time.Time `json:"timestamp"`
-	}
-
-	for _, transaction := range transactions {
-		filteredTransactions = append(filteredTransactions, struct {
-			Type      string    `json:"type"`
-			Amount    float64   `json:"amount"`
-			Timestamp time.Time `json:"timestamp"`
-		}{
-			Type:      transaction.Type,
-			Amount:    transaction.Amount,
-			Timestamp: transaction.Timestamp,
-		})
-	}
-
 	// Return success response with filtered transactions
 	return c.JSON(models.Response{
 		Success: true,
-		Data:    filteredTransactions,
+		Data:    transactions,
 	})
 }
 
