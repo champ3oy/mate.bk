@@ -132,6 +132,8 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 
 	transaction.Tax, err = utils.ConvertCurrencyToFloat(transactionx.Tax)
 	if err != nil {
+		fmt.Println(transactionx)
+		fmt.Println(err)
 		return c.Status(400).JSON(models.Response{
 			Success: false,
 			Error:   "Error converting tax to number",
