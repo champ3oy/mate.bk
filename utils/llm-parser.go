@@ -63,7 +63,7 @@ Extract these fields:
 - Transaction ID (e.g., 12345678911)
 - Fee (if any)
 - Tax (if any)
-- Balance (if mentioned)
+- Balance (Current balanced if mentioned else Available balanced)
 - Type (must be either "credit" or "debit" based on the rules above)
 - Reference (any ref or reference if available)
 
