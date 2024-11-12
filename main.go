@@ -39,6 +39,7 @@ func main() {
 
 	// Public routes
 	app.Post("/register", userHandler.Register)
+	app.Post("/login", userHandler.Login)
 	app.Post("/consume/:userId", transactionHandler.Consume)
 	app.Get("/metrics", monitor.New())
 
