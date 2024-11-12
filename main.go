@@ -13,6 +13,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 )
 
 func main() {
@@ -39,6 +40,7 @@ func main() {
 	// Public routes
 	app.Post("/register", userHandler.Register)
 	app.Post("/consume/:userId", transactionHandler.Consume)
+	app.Get("/metrics", monitor.New())
 
 	// Protected routes
 	api := app.Group("/api", middleware.APIKeyAuth())
