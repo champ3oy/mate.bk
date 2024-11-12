@@ -34,7 +34,7 @@ Extract the following details from the given SMS message and output strictly in 
 - Fee (if any)
 - Tax (if any)
 - Balance (if mentioned)
-- Type (indicate whether the transaction is a credit or a debit. A transaction is a debit if it involves sending money (e.g., payment for goods/services or cash out). A transaction is a credit if it involves receiving money (e.g., payment received).)
+- Type (indicate whether the transaction is a "credit" or a "debit". A transaction is a debit if it involves sending money (e.g., Payment for or Cash Out made for). A transaction is a credit if it involves receiving money (e.g., payment received for).)
 - Reference (any ref or reference if available; clarify that it may be referred to as either "ref" or "reference")
 
 Do not include any explanation, only return the JSON.
