@@ -12,6 +12,7 @@ import (
 	slogbetterstack "github.com/samber/slog-betterstack"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 )
@@ -27,6 +28,10 @@ func main() {
 	// Initialize handlers
 	userHandler := routes.NewUserHandler()
 	transactionHandler := routes.NewTransactionHandler()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+	}))
 
 	app.Use(logger.New(logger.Config{
 		TimeFormat: time.RFC3339Nano,
