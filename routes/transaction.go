@@ -29,6 +29,13 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 		Sender  string `json:"sender"`
 	}
 
+	if input.Sender != "MobileMoney" && input.Sender != "ATMoney" && input.Sender != "Fidelity" {
+		return c.Status(400).JSON(models.Response{
+			Success: false,
+			Error:   "Invalid sender",
+		})
+	}
+
 	// Parse request body
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(400).JSON(models.Response{
