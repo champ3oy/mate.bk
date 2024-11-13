@@ -7,6 +7,7 @@ import (
 	"mate/config"
 	"mate/models"
 	"mate/utils"
+	"math"
 	"regexp"
 	"strings"
 	"time"
@@ -29,7 +30,7 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 		Sender  string `json:"sender"`
 	}
 
-	if input.Sender == "MobileMoney" || input.Sender == "ATMoney" || input.Sender == "Fidelity" {
+	if input.Sender != "MobileMoney" && input.Sender != "ATMoney" && input.Sender != "Fidelity" {
 		return c.Status(400).JSON(models.Response{
 			Success: false,
 			Error:   "Invalid sender",
@@ -57,18 +58,14 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 		})
 	}
 
-	var userx models.User // Create an instance of models.User
-
-	err = user.Decode(&userx) // Decode into the instance
+	var userx models.User
+	err = user.Decode(&userx)
 	if err != nil {
-
 		log.Println(err)
 		return c.Status(400).JSON(models.Response{
-
 			Success: false,
 			Error:   "Error decoding user",
 		})
-
 	}
 
 	transaction.UserID = userx.ID.String()
@@ -86,8 +83,6 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 	escapedJSON := transactionLLM.Choices[0].Message.Content
 
 	cleanJSON := strings.Replace(escapedJSON, "\\n", "", -1)
-
-	// Remove unnecessary text ".deep array"
 	cleanJSON = strings.Replace(cleanJSON, ".deep array", "", -1)
 
 	if !strings.HasSuffix(cleanJSON, "}") {
@@ -118,6 +113,7 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 			Error:   "Error converting amount to number",
 		})
 	}
+
 	transaction.Amount = amount
 	transaction.Sender = transactionx.Sender
 	transaction.Receiver = transactionx.Receiver
@@ -163,7 +159,6 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 		})
 	}
 
-	// Return success response
 	return c.JSON(models.Response{
 		Success: true,
 		Data: fiber.Map{
@@ -178,8 +173,12 @@ func (h *TransactionHandler) GetTransactions(c *fiber.Ctx) error {
 	userId := user.ID.String()
 
 	// Parse query parameters for type and date
-	transactionType := c.Query("type") // e.g., "credit" or "debit"
-	date := c.Query("date")            // e.g., "2023-10-01"
+	transactionType := c.Query("type")
+	date := c.Query("date")
+
+	// Get today's date in the format stored in your database
+	today := time.Now().Format("2006-01-02")
+	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 
 	// Create a filter for the transactions
 	filter := bson.M{"userid": userId}
@@ -187,14 +186,11 @@ func (h *TransactionHandler) GetTransactions(c *fiber.Ctx) error {
 		filter["type"] = transactionType
 	}
 	if date != "" {
-		filter["date"] = date // Assuming you have a date field in your transaction model
+		filter["date"] = date
 	}
 
-	// Add options for sorting or limiting if needed
-	options := options.Find() // Create options if needed
-	// Example: options.SetSort(bson.D{{"date", -1}}) // Sort by date descending
-
-	cursor, err := config.Find("transactions", filter, options) // Pass options here
+	// Get all transactions
+	cursor, err := config.Find("transactions", filter, options.Find())
 	if err != nil {
 		log.Println(err)
 		return c.Status(400).JSON(models.Response{
@@ -213,11 +209,73 @@ func (h *TransactionHandler) GetTransactions(c *fiber.Ctx) error {
 		})
 	}
 
-	// Return success response with filtered transactions
+	// Calculate totals and daily changes
+	var (
+		totalDebit       float64
+		totalCredit      float64
+		todayDebit       float64
+		todayCredit      float64
+		yesterdayDebit   float64
+		yesterdayCredit  float64
+		debitChange      float64
+		creditChange     float64
+		finalBalance     float64
+		percentageChange float64
+	)
+
+	// Calculate totals and separate today's/yesterday's transactions
+	for _, transaction := range transactions {
+		if transaction.Type == "debit" {
+			totalDebit += transaction.Amount
+			if transaction.Date == today {
+				todayDebit += transaction.Amount
+			} else if transaction.Date == yesterday {
+				yesterdayDebit += transaction.Amount
+			}
+		} else if transaction.Type == "credit" {
+			totalCredit += transaction.Amount
+			if transaction.Date == today {
+				todayCredit += transaction.Amount
+			} else if transaction.Date == yesterday {
+				yesterdayCredit += transaction.Amount
+			}
+		}
+	}
+
+	// Calculate percentage changes
+	if yesterdayDebit > 0 {
+		debitChange = ((todayDebit - yesterdayDebit) / yesterdayDebit) * 100
+	}
+	if yesterdayCredit > 0 {
+		creditChange = ((todayCredit - yesterdayCredit) / yesterdayCredit) * 100
+	}
+
+	// Calculate final balance and its percentage change
+	finalBalance = totalCredit - totalDebit
+	previousBalance := (yesterdayCredit - yesterdayDebit)
+	if previousBalance != 0 {
+		percentageChange = ((finalBalance - previousBalance) / math.Abs(previousBalance)) * 100
+	}
+
+	// Return success response with filtered transactions and calculations
 	return c.JSON(models.Response{
 		Success: true,
-		Data:    transactions,
+		Data: fiber.Map{
+			"transactions": transactions,
+			"stats": fiber.Map{
+				"balance": fiber.Map{
+					"amount":           finalBalance,
+					"percentageChange": percentageChange,
+				},
+				"income": fiber.Map{
+					"amount":           totalCredit,
+					"percentageChange": creditChange,
+				},
+				"expense": fiber.Map{
+					"amount":           totalDebit,
+					"percentageChange": debitChange,
+				},
+			},
+		},
 	})
 }
-
-//
