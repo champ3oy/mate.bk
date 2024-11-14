@@ -81,7 +81,7 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	user := models.User{
 		Email:     input.Email,
 		Password:  string(hashedPassword),
-		ApiKey:    apiKey,
+		ApiKey:    "mate_" + apiKey,
 		CreatedAt: time.Now(),
 		UserID:    userID,
 	}
