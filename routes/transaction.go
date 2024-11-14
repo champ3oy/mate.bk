@@ -114,11 +114,13 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 		})
 	}
 
+	parsedMsg, _ := utils.ParseTransaction(input.Message)
+
 	transaction.Amount = amount
 	transaction.Sender = transactionx.Sender
 	transaction.Receiver = transactionx.Receiver
 	transaction.TransactionID = transactionx.TransactionID
-	transaction.Type = transactionx.Type
+	transaction.Type = string(parsedMsg.Type)
 	transaction.RawSMS = input.Message
 	transaction.Reference = transactionx.Reference
 	transaction.Timestamp = time.Now()
