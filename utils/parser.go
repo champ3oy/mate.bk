@@ -10,8 +10,9 @@ import (
 type TransactionType string
 
 const (
-	Credit TransactionType = "CREDIT"
-	Debit  TransactionType = "DEBIT"
+	Credit  TransactionType = "credit"
+	Debit   TransactionType = "debit"
+	Unknown TransactionType = "UNKNOWN"
 )
 
 // Transaction represents the parsed transaction details
@@ -30,13 +31,63 @@ type RawSMS struct {
 }
 
 // ParseTransaction parses a raw SMS message and returns transaction details
-func ParseTransaction(rawJSON string) (Transaction, error) {
-
-	var transactions Transaction
+func ParseTransaction(rawJSON string) Transaction {
 	transaction := parseMessage(rawJSON)
-	transactions = transaction
+	return transaction
+}
 
-	return transactions, nil
+func determineTransactionType(message string) TransactionType {
+	msg := strings.ToLower(message)
+
+	// Credit patterns
+	creditPatterns := []string{
+		"payment received",
+		"money received",
+		"cash received",
+		"received",
+		"credited",
+		"credit",
+		"deposited",
+		"deposit",
+		"cash in",
+	}
+
+	// Debit patterns
+	debitPatterns := []string{
+		"payment made",
+		"payment for",
+		"paid to",
+		"paid",
+		"payment to",
+		"sent to",
+		"transferred to",
+		"withdrawal",
+		"withdrew",
+		"debited",
+		"cash out",
+	}
+
+	// First check debit patterns as they are typically more explicit
+	for _, pattern := range debitPatterns {
+		if strings.Contains(msg, pattern) {
+			return Debit
+		}
+	}
+
+	// Then check credit patterns
+	for _, pattern := range creditPatterns {
+		if strings.Contains(msg, pattern) {
+			return Credit
+		}
+	}
+
+	// If no patterns match, check for additional context
+	// Most messages starting with "Payment" without credit indicators are typically debits
+	if strings.HasPrefix(msg, "payment") {
+		return Debit
+	}
+
+	return Unknown
 }
 
 func parseMessage(message string) Transaction {
@@ -44,13 +95,8 @@ func parseMessage(message string) Transaction {
 		RawMessage: message,
 	}
 
-	// Determine transaction type
-	if strings.Contains(strings.ToLower(message), "received") {
-		transaction.Type = Credit
-	} else if strings.Contains(strings.ToLower(message), "payment for") ||
-		strings.Contains(strings.ToLower(message), "paid") {
-		transaction.Type = Debit
-	}
+	// Determine transaction type using the new robust method
+	transaction.Type = determineTransactionType(message)
 
 	// Extract amount
 	amountRegex := regexp.MustCompile(`GHS\s*(\d+(?:\.\d{2})?)`)

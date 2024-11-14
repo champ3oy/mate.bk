@@ -13,7 +13,7 @@ import (
 
 type PaymentDetails struct {
 	Amount        string `json:"amount"`
-	Sender        string `json:"sender"`
+	CounterParty  string `json:"counterParty"`
 	TransactionID string `json:"transaction_id"`
 	Fee           string `json:"fee"`
 	Tax           string `json:"tax"`
@@ -58,8 +58,7 @@ Transaction Type Classification Rules:
 
 Extract these fields:
 - Amount (e.g., GHS 10.00)
-- Sender (who the money is from)
-- Receiver (who the money is sent to)
+- CounterPart (who the money is from or who sent the money)
 - Transaction ID (e.g., 12345678911)
 - Fee (if any)
 - Tax (if any)
@@ -74,8 +73,7 @@ SMS Message: "%s"
 Output Format:
 {
   "amount": "value",
-  "sender": "value",
-  "receiver": "value",
+  "counterParty": "value",
   "transaction_id": "value",
   "fee": "value",
   "tax": "value",

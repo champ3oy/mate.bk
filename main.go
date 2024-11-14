@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"mate/config"
 	"mate/middleware"
@@ -30,7 +31,15 @@ func main() {
 	userHandler := routes.NewUserHandler()
 	transactionHandler := routes.NewTransactionHandler()
 
-	app.Use(idempotency.New())
+	app.Use(idempotency.New(idempotency.Config{
+		KeyHeaderValidate: func(k string) error {
+			if l, wl := len(k), 3; l != wl { // UUID length is 36 chars
+				return fmt.Errorf("%w: invalid length: %d != %d", idempotency.ErrInvalidIdempotencyKey, l, wl)
+			}
+
+			return nil
+		},
+	}))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 	}))

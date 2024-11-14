@@ -8,8 +8,7 @@ import (
 
 type LLMTransaction struct {
 	Amount        string `json:"amount"`
-	Sender        string `json:"sender"`
-	Receiver      string `json:"receiver"`
+	CounterParty  string `json:"counterParty"`
 	TransactionID string `json:"transaction_id"`
 	Fee           string `json:"fee"`
 	Tax           string `json:"tax"`
