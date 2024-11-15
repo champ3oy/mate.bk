@@ -154,6 +154,16 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 		})
 	}
 
+	// Check for duplicate transaction
+	existingTransactionFilter := bson.M{"transactionid": transactionx.TransactionID}
+	existingTransaction, err := config.FindOne("transactions", existingTransactionFilter)
+	if err == nil && existingTransaction != nil {
+		return c.Status(400).JSON(models.Response{
+			Success: false,
+			Error:   "Duplicate transaction",
+		})
+	}
+
 	err = config.InsertOne("transactions", transaction)
 	if err != nil {
 		return c.Status(400).JSON(models.Response{
@@ -194,7 +204,7 @@ func (h *TransactionHandler) GetTransactions(c *fiber.Ctx) error {
 	}
 
 	// Get all transactions
-	cursor, err := config.Find("transactions", filter, options.Find().SetSort(bson.D{{Key: "timestamp", Value: 1}}))
+	cursor, err := config.Find("transactions", filter, options.Find().SetSort(bson.D{{Key: "timestamp", Value: -1}}))
 	if err != nil {
 		log.Println(err)
 		return c.Status(400).JSON(models.Response{
