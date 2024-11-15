@@ -158,6 +158,7 @@ func (h *TransactionHandler) Consume(c *fiber.Ctx) error {
 	existingTransactionFilter := bson.M{"transactionid": transactionx.TransactionID}
 	existingTransaction, err := config.FindOne("transactions", existingTransactionFilter)
 	if err == nil && existingTransaction != nil {
+		fmt.Println(transactionx.TransactionID)
 		return c.Status(400).JSON(models.Response{
 			Success: false,
 			Error:   "Duplicate transaction",

@@ -65,6 +65,8 @@ func determineTransactionType(message string) TransactionType {
 		"withdrew",
 		"debited",
 		"cash out",
+		"debit alert",
+		"debit",
 	}
 
 	// First check debit patterns as they are typically more explicit

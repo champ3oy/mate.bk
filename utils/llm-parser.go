@@ -59,7 +59,7 @@ Transaction Type Classification Rules:
 Extract these fields:
 - Amount (e.g., GHS 10.00)
 - CounterPart (who the money is from or who sent the money)
-- Transaction ID (e.g., 12345678911)
+- Transaction or Session or Unique ID (get this from the message body)
 - Fee (if any)
 - Tax (if any)
 - Balance (Current balanced if mentioned else Available balanced)
