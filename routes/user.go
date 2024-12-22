@@ -168,7 +168,7 @@ func generateAPIKey() (string, error) {
 
 func GenerateUniqueID() (string, error) {
 	// Create a byte slice to hold the random bytes
-	bytes := make([]byte, 6) // 6 bytes will give us 12 characters in hex
+	bytes := make([]byte, 6)
 
 	// Generate random bytes
 	if _, err := rand.Read(bytes); err != nil {

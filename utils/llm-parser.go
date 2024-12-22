@@ -94,8 +94,8 @@ Output Format:
 		},
 		"max_tokens":  700,
 		"stream":      false,
-		"temperature": 0.1, // Added: Lower temperature for more consistent outputs
-		"top_p":       0.9, // Added: Reduce randomness while maintaining some flexibility
+		"temperature": 0.1,
+		"top_p":       0.9,
 	}
 
 	// Convert data map to JSON

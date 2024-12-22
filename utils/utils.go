@@ -43,7 +43,7 @@ func parseFloat(cleanedStr string) (float64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("error parsing currency value: %s", cleanedStr)
 	}
-	if value != value { // NaN check
+	if value != value {
 		return 0, fmt.Errorf("invalid currency value: %s", cleanedStr)
 	}
 	return value, nil
